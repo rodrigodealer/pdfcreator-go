@@ -1,40 +1,27 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
-	"io/ioutil"
 	"log"
+	"net/http"
 
-	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
+	"github.com/gorilla/mux"
+	"github.com/rodrigodealer/pdfcreator-go/handlers"
 )
 
+func handler(w http.ResponseWriter, r *http.Request) {
+	return
+}
+
 func main() {
+	r := mux.NewRouter()
+	r.HandleFunc("/", handler)
+	r.HandleFunc("/generate", handlers.PdfHandler).Methods("POST")
+	r.HandleFunc("/internal/healthcheck", handlers.HealthcheckHandler).Methods("GET")
+	http.Handle("/", r)
 
-	pdfg, err := wkhtmltopdf.NewPDFGenerator()
+	log.Print("Starting server on port 8080")
+	err := http.ListenAndServe(":8080", r)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic("Something is wrong : " + err.Error())
 	}
-	pdfg.Dpi.Set(300)
-	pdfg.NoCollate.Set(false)
-	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
-	// pdfg.MarginBottom.Set(40)
-
-	data, err := ioutil.ReadFile("./page.html")
-
-	var html = bytes.NewReader(data)
-
-	pdfg.AddPage(wkhtmltopdf.NewPageReader(html))
-
-	err = pdfg.Create()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = pdfg.WriteFile("./simplesample.pdf")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Done")
 }
