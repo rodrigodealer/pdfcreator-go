@@ -2,16 +2,16 @@ package handlers
 
 import (
 	"bytes"
-	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 )
 
 func PdfHandler(w http.ResponseWriter, r *http.Request) {
-
+	start := time.Now()
 	pdfg, err := wkhtmltopdf.NewPDFGenerator()
 	if err != nil {
 		log.Fatal(err)
@@ -21,9 +21,9 @@ func PdfHandler(w http.ResponseWriter, r *http.Request) {
 	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
 	// pdfg.MarginBottom.Set(40)
 
-	data, err := ioutil.ReadFile("./page.html")
+	arr := []byte(r.FormValue("body"))
 
-	var html = bytes.NewReader(data)
+	var html = bytes.NewReader(arr)
 
 	pdfg.AddPage(wkhtmltopdf.NewPageReader(html))
 
@@ -32,10 +32,17 @@ func PdfHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	err = pdfg.WriteFile("./simplesample.pdf")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(w).Encode("Done")
+	var filename = "report"
+	if r.FormValue("name") != "" {
+		filename = r.FormValue("name")
+	}
+
+	log.Printf("Generated pdf in %s", time.Since(start))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", filename))
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Write(pdfg.Bytes())
 }
