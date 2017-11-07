@@ -1,11 +1,13 @@
-FROM alpine:edge
+FROM alpine:3.5
+MAINTAINER Fabian Beuke <mail@beuke.org>
 
-RUN apk add wkhtmltopdf \
-            --no-cache \
-            --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
-            --allow-untrusted
+RUN apk add --update --no-cache \
+    libgcc libstdc++ libx11 glib libxrender libxext libintl \
+    libcrypto1.0 libssl1.0 \
+    ttf-dejavu ttf-droid ttf-freefont ttf-liberation ttf-ubuntu-font-family
 
-COPY pdfcreator /opt/pdfcreator
+COPY wkhtmltopdf /usr/bin/wkhtmltopdf
 
-EXPOSE 8080
+COPY pdfcreator* /opt/pdfcreator
+
 CMD ["/opt/pdfcreator"]
