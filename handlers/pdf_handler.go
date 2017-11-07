@@ -21,16 +21,9 @@ func PdfHandler(w http.ResponseWriter, r *http.Request) {
 	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
 	// pdfg.MarginBottom.Set(40)
 
-	arr := []byte(r.FormValue("body"))
-
-	var html = bytes.NewReader(arr)
-
-	pdfg.AddPage(wkhtmltopdf.NewPageReader(html))
+	pdfg.AddPage(wkhtmltopdf.NewPageReader(bytes.NewReader([]byte(r.FormValue("body")))))
 
 	err = pdfg.Create()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	if err != nil {
 		log.Fatal(err)
