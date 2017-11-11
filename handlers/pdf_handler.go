@@ -1,41 +1,29 @@
 package handlers
 
 import (
-	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 
-	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
+	"github.com/rodrigodealer/pdfcreator-go/pdf"
+	"github.com/rodrigodealer/pdfcreator-go/util"
 )
 
 func PdfHandler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	pdfg, err := wkhtmltopdf.NewPDFGenerator()
-	if err != nil {
-		log.Fatal(err)
-	}
-	pdfg.Dpi.Set(300)
-	pdfg.NoCollate.Set(false)
-	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
-	// pdfg.MarginBottom.Set(40)
 
-	pdfg.AddPage(wkhtmltopdf.NewPageReader(bytes.NewReader([]byte(r.FormValue("body")))))
+	var header = r.FormValue("header")
+	var footer = r.FormValue("footer")
+	var body = r.FormValue("body")
 
-	err = pdfg.Create()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var filename = "report"
-	if r.FormValue("name") != "" {
-		filename = r.FormValue("name")
-	}
-
+	pdfFile := pdf.ProcessForm(header, footer, body)
+	pdf.Generate(pdfFile)
 	log.Printf("Generated pdf in %s", time.Since(start))
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", filename))
+	pdfBytes, _ := ioutil.ReadFile(pdfFile.Filename)
+	go util.CleanUp(pdfFile.Files)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", pdfFile.Filename))
 	w.Header().Set("Content-Type", "application/pdf")
-	w.Write(pdfg.Bytes())
+	w.Write(pdfBytes)
 }
