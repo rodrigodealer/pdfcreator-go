@@ -1,5 +1,4 @@
 FROM alpine:3.5
-MAINTAINER Fabian Beuke <mail@beuke.org>
 
 RUN apk add --update --no-cache \
     libgcc libstdc++ libx11 glib libxrender libxext libintl \

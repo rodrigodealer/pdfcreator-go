@@ -19,8 +19,20 @@ func RandomFilename(filetype string, extension string) string {
 	return fmt.Sprintf("%s-%d.%s", filetype, rand.Int(), extension)
 }
 
-func WriteStringToFile(text string, filetype string) (string, error) {
+func WriteStringToFile(text string, filetype string) string {
 	var filename = RandomFilename(filetype, "html")
-	err := ioutil.WriteFile(filename, []byte(text), 0644)
-	return filename, err
+	go writeToFile(filename, text)
+	return filename
+}
+
+func writeToFile(file string, content string) {
+	ioutil.WriteFile(file, []byte(content), 0644)
+}
+
+func Read(filename string) []byte {
+	var file, err = ioutil.ReadFile(filename)
+	if err != nil {
+		log.Panic("Could not read pdf file", err.Error())
+	}
+	return file
 }

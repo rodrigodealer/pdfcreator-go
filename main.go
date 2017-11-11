@@ -8,13 +8,8 @@ import (
 	"github.com/rodrigodealer/pdfcreator-go/handlers"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	return
-}
-
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/", handler)
 	r.HandleFunc("/generate", handlers.PdfHandler).Methods("POST")
 	r.HandleFunc("/internal/healthcheck", handlers.HealthcheckHandler).Methods("GET")
 	http.Handle("/", r)
